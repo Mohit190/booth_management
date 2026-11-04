@@ -1,0 +1,111 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "name": "Aarav Sharma",
+      "username": "aarav",
+      "password": "field123",
+      "role": "user",
+      "area": "Ward 04",
+      "status": "active",
+      "lat": 30.3398,
+      "lng": 76.3869,
+      "last_seen": "2026-11-04T08:42:29.281959+00:00"
+    },
+    {
+      "id": "u2",
+      "name": "Simran Kaur",
+      "username": "simran",
+      "password": "field123",
+      "role": "user",
+      "area": "Ward 07",
+      "status": "active",
+      "lat": 30.347,
+      "lng": 76.4,
+      "last_seen": "2026-11-04T08:42:29.281959+00:00"
+    },
+    {
+      "id": "u3",
+      "name": "Rahul Verma",
+      "username": "rahul",
+      "password": "field123",
+      "role": "user",
+      "area": "Village North",
+      "status": "offline",
+      "lat": 30.33,
+      "lng": 76.37,
+      "last_seen": "2026-11-04T08:42:29.281959+00:00"
+    },
+    {
+      "id": "u2f4f3c7",
+      "name": "Mohit Bharti",
+      "username": "mohit_123",
+      "password": "field123",
+      "role": "user",
+      "area": "patiala",
+      "status": "offline",
+      "lat": null,
+      "lng": null,
+      "last_seen": null
+    }
+  ],
+  "entries": [
+    {
+      "id": "e1",
+      "title": "Community visit summary",
+      "area": "Ward 04",
+      "notes": "Met local residents; follow-up requested.",
+      "created_by": "u1",
+      "created_by_name": "Aarav Sharma",
+      "created_at": "2026-11-04T08:42:29.281959+00:00",
+      "files": [],
+      "lat": 30.3398,
+      "lng": 76.3869,
+      "status": "Approved",
+      "review_comment": ""
+    },
+    {
+      "id": "e2",
+      "title": "Field observation",
+      "area": "Ward 07",
+      "notes": "Uploaded field notes for review.",
+      "created_by": "u2",
+      "created_by_name": "Simran Kaur",
+      "created_at": "2026-11-04T08:42:29.281959+00:00",
+      "files": [],
+      "lat": 30.347,
+      "lng": 76.4,
+      "status": "Approved"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "title": "Complete assigned area visit",
+      "area": "Ward 04",
+      "assigned_to": "u1",
+      "due_date": "2026-11-10",
+      "status": "In Progress"
+    },
+    {
+      "id": "t2",
+      "title": "Submit field observations",
+      "area": "Ward 07",
+      "assigned_to": "u2",
+      "due_date": "2026-11-12",
+      "status": "Pending"
+    }
+  ],
+  "activity": [
+    {
+      "id": "0e5ac5b6",
+      "message": "Admin created field user Mohit Bharti",
+      "created_at": "2026-11-04T08:45:38.455347+00:00"
+    },
+    {
+      "id": "8f071644",
+      "message": "Entry \u201cCommunity visit summary\u201d marked Approved",
+      "created_at": "2026-11-04T09:10:55.449305+00:00"
+    }
+  ]
+}
