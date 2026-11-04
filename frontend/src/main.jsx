@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import './styles.css';
 
-const API = 'http://127.0.0.1:8000';
+const API = 'https://booth-management-1.onrender.com';
 
 const demoUsers = [
   { id:'u1', name:'Aarav Sharma', username:'aarav', area:'Ward 04', status:'active', lat:30.3398, lng:76.3869, last_seen:new Date().toISOString() },
