@@ -8,8 +8,9 @@ import {
   ChevronRight, CalendarDays, UserRound, Save, Pencil
 } from 'lucide-react';
 import './styles.css';
+import { PublicSurvey, SurveyAdmin } from './Survey';
 
-const API = 'https://booth-management-1.onrender.com';
+const API = 'http://127.0.0.1:8000';
 
 const demoUsers = [
   { id:'u1', name:'Aarav Sharma', username:'aarav', area:'Ward 04', status:'active', lat:30.3398, lng:76.3869, last_seen:new Date().toISOString() },
@@ -37,6 +38,22 @@ const fmt = s =>
   }) : 'Not reported';
 
 function App() {
+  if (window.location.pathname === '/survey') return <PublicSurvey />;
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
+  // Update the dashboard clock every second using the browser's local time.
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const hour = currentTime.getHours();
+  const greeting =
+    hour >= 5 && hour < 12 ? 'Good Morning' :
+    hour >= 12 && hour < 17 ? 'Good Afternoon' :
+    hour >= 17 && hour < 21 ? 'Good Evening' :
+    'Good Night';
+
   const [user, setUser] = useState(null);
   const [loginMode, setLoginMode] = useState('admin');
   const [username, setUsername] = useState('admin');
@@ -99,6 +116,8 @@ function App() {
   });
 
   const isAdmin = user?.role === 'admin' || user?.id === 'admin';
+  const isCandidate = user?.role === 'candidate';
+  const isFieldUser = Boolean(user) && !isAdmin && !isCandidate;
 
   // LOGOUT FUNCTION - ADMIN AND FIELD USER
   function handleLogout() {
@@ -158,6 +177,14 @@ function App() {
       } else {
         setNotice('Demo admin: use admin / admin123');
       }
+    } else if (loginMode === 'candidate') {
+      if (username === 'candidate' && password === 'candidate123') {
+        setUser({ id:'candidate', name:'Candidate Viewer', username:'candidate', role:'candidate' });
+        setPage('Team Activity');
+        setNotice('Welcome, Candidate. You have read-only team visibility.');
+      } else {
+        setNotice('Candidate demo: use candidate / candidate123');
+      }
     } else {
       try {
         const r = await fetch(`${API}/api/login`, {
@@ -189,7 +216,7 @@ function App() {
   // LOCATION
   async function sendLocation(posUser) {
     const u = posUser || user;
-    if (!u || u.role === 'admin') return;
+    if (!u || u.role === 'admin' || u.role === 'candidate') return;
 
     const send = async (lat, lng) => {
       try {
@@ -232,7 +259,7 @@ function App() {
       return;
     }
 
-    const u = user?.role === 'user' ? user : data.users[0];
+    const u = isFieldUser ? user : data.users[0];
 
     try {
       const fd = new FormData();
@@ -361,7 +388,7 @@ function App() {
 
   // LOAD FIELD USER PROFILE
   async function loadMyProfile() {
-    if (!user || isAdmin) return;
+    if (!user || !isFieldUser) return;
 
     setProfileLoading(true);
 
@@ -444,10 +471,10 @@ function App() {
   }
 
   useEffect(() => {
-    if (page === 'My Profile' && user && !isAdmin) {
+    if (page === 'My Profile' && user && isFieldUser) {
       loadMyProfile();
     }
-  }, [page, user?.id]);
+  }, [page, user?.id, isFieldUser]);
 
   const filteredUsers = useMemo(
     () => data.users.filter(u =>
@@ -469,14 +496,19 @@ function App() {
         { name:'Field Users', icon:Users },
         { name:'Live Tracking', icon:MapPinned },
         { name:'Data Entries', icon:ClipboardList },
-        { name:'Tasks & Assignments', icon:CalendarDays }
+        { name:'Tasks & Assignments', icon:CalendarDays },
+        { name:'Public Survey', icon:ClipboardList }
       ]
-    : [
-        { name:'My Field', icon:LayoutDashboard },
-        { name:'My Submissions', icon:ClipboardList },
-        { name:'My Tasks', icon:CalendarDays },
-        { name:'My Profile', icon:UserRound }
-      ];
+    : isCandidate
+      ? [
+          { name:'Team Activity', icon:Activity }
+        ]
+      : [
+          { name:'My Field', icon:LayoutDashboard },
+          { name:'My Submissions', icon:ClipboardList },
+          { name:'My Tasks', icon:CalendarDays },
+          { name:'My Profile', icon:UserRound }
+        ];
 
   // LOGIN SCREEN
   if (!user) {
@@ -561,6 +593,18 @@ function App() {
 
               <button
                 type="button"
+                className={loginMode==='candidate'?'selected':''}
+                onClick={() => {
+                  setLoginMode('candidate');
+                  setUsername('candidate');
+                  setPassword('candidate123');
+                }}
+              >
+                Candidate
+              </button>
+
+              <button
+                type="button"
                 className={loginMode==='user'?'selected':''}
                 onClick={() => {
                   setLoginMode('user');
@@ -598,6 +642,7 @@ function App() {
               <div>
                 <b>Interactive prototype credentials</b>
                 <span>Admin: admin / admin123</span>
+                <span>Candidate: candidate / candidate123</span>
                 <span>Field: aarav / field123 · simran / field123</span>
               </div>
             </div>
@@ -678,7 +723,7 @@ function App() {
             <div className="avatar">{initials(user.name)}</div>
             <div className="profile-text">
               <b>{user.name}</b>
-              <span>{isAdmin?'Administrator':'Field officer'}</span>
+              <span>{isAdmin ? 'Administrator' : isCandidate ? 'Candidate · View only' : 'Field officer'}</span>
             </div>
 
             {/* LOGOUT BUTTON FOR ADMIN AND FIELD USER */}
@@ -721,7 +766,7 @@ function App() {
 
             <button
               className="notification icon-btn"
-              onClick={() => setPage(isAdmin?'Data Entries':'My Submissions')}
+              onClick={() => setPage(isAdmin ? 'Data Entries' : isCandidate ? 'Team Activity' : 'My Submissions')}
             >
               <Bell size={18}/><i></i>
             </button>
@@ -746,10 +791,13 @@ function App() {
               <div className="page-heading">
                 <div>
                   <div className="eyebrow dark">
-                    COMMAND CENTER <span className="tiny-line"></span> NOV 2026
+                    COMMAND CENTER <span className="tiny-line"></span> {currentTime.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }).toUpperCase()}
                   </div>
-                  <h1>Good afternoon, Admin <span>✦</span></h1>
-                  <p>Here’s what’s happening across your field operations today.</p>
+                  <h1>{greeting}, Admin <span>✦</span></h1>
+                  <p>
+                    Here’s what’s happening across your field operations today.
+                    <span className="live-dashboard-time">{' '}{currentTime.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
+                  </p>
                 </div>
                 <div className="heading-actions">
                   <button className="secondary" onClick={() => setPage('Data Entries')}>
@@ -1037,6 +1085,9 @@ function App() {
             </>
           )}
 
+          {/* PUBLIC OPINION SURVEY ADMIN */}
+          {page==='Public Survey' && isAdmin && <SurveyAdmin />}
+
           {/* ADMIN TASKS */}
           {page==='Tasks & Assignments' && isAdmin && (
             <>
@@ -1088,8 +1139,126 @@ function App() {
             </>
           )}
 
+          {/* CANDIDATE READ-ONLY TEAM ACTIVITY */}
+          {page==='Team Activity' && isCandidate && (
+            <>
+              <div className="page-heading">
+                <div>
+                  <div className="eyebrow dark">CANDIDATE WORKSPACE · READ ONLY</div>
+                  <h1>Team activity overview</h1>
+                  <p>Monitor field-team progress and submitted updates. You cannot edit records or manage users.</p>
+                </div>
+                <button className="secondary" onClick={refresh}>
+                  <Activity size={16}/> Refresh activity
+                </button>
+              </div>
+
+              <div className="stats-grid">
+                <Stat
+                  icon={Users}
+                  label="Field team members"
+                  value={data.users.length}
+                  sub="Registered field users"
+                  tone="violet"
+                />
+                <Stat
+                  icon={MapPinned}
+                  label="Currently active"
+                  value={data.users.filter(u=>u.status==='active').length}
+                  sub="Users reporting active status"
+                  tone="green"
+                />
+                <Stat
+                  icon={ClipboardList}
+                  label="Total submissions"
+                  value={data.entries.length}
+                  sub="Field records received"
+                  tone="blue"
+                />
+                <Stat
+                  icon={Clock3}
+                  label="Awaiting review"
+                  value={data.entries.filter(e=>e.status==='Pending').length}
+                  sub="Pending admin review"
+                  tone="orange"
+                />
+              </div>
+
+              <div className="candidate-activity-grid">
+                <section className="panel">
+                  <div className="panel-head">
+                    <div>
+                      <h3>Field team status</h3>
+                      <p>Read-only view of field team availability</p>
+                    </div>
+                    <span className="live-chip"><span></span> TEAM STATUS</span>
+                  </div>
+                  <div className="team-list">
+                    {data.users.filter(u =>
+                      (u.name+' '+u.area+' '+u.username).toLowerCase().includes(query.toLowerCase())
+                    ).map(u => (
+                      <div className="team-row candidate-team-row" key={u.id}>
+                        <div className="avatar">{initials(u.name)}</div>
+                        <div className="team-info">
+                          <b>{u.name}</b>
+                          <span><MapPin size={12}/>{u.area||'Area not assigned'}</span>
+                        </div>
+                        <div className="team-state">
+                          <span className={`status-dot ${u.status==='active'?'online':''}`}></span>
+                          <span>{u.status==='active'?'Active':'Offline'}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="panel activity-panel">
+                  <div className="panel-head">
+                    <div>
+                      <h3>Recent field activity</h3>
+                      <p>Latest submissions from the team</p>
+                    </div>
+                    <span className="live-chip"><span></span> UPDATING</span>
+                  </div>
+                  {(data.activity?.length ? data.activity : data.entries.map(e => ({
+                    id:e.id,
+                    message:`${e.created_by_name} submitted “${e.title}”`,
+                    created_at:e.created_at
+                  }))).filter(a =>
+                    (a.message||'').toLowerCase().includes(query.toLowerCase())
+                  ).slice(0,12).map((a,i) => (
+                    <div className="activity-row" key={a.id}>
+                      <div className={`activity-icon ai-${i%4}`}>
+                        {i%2===0?<ClipboardList size={16}/>:<MapPin size={16}/>}
+                      </div>
+                      <div className="activity-copy">
+                        <b>{a.message}</b>
+                        <span>{fmt(a.created_at)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {!data.entries.length && !data.activity?.length && (
+                    <div className="candidate-empty">No field activity has been submitted yet.</div>
+                  )}
+                </section>
+              </div>
+
+              <section className="panel submissions-panel">
+                <div className="panel-head">
+                  <div>
+                    <h3>Team submissions</h3>
+                    <p>Read-only reports submitted by field users</p>
+                  </div>
+                </div>
+                <EntriesTable entries={data.entries.filter(e =>
+                  (e.title+' '+e.area+' '+e.created_by_name).toLowerCase().includes(query.toLowerCase())
+                )} review={() => {}} admin={false}/>
+              </section>
+            </>
+          )}
+
           {/* FIELD USER DASHBOARD */}
-          {page==='My Field' && !isAdmin && (
+          {page==='My Field' && isFieldUser && (
             <>
               <div className="page-heading">
                 <div>
@@ -1137,7 +1306,7 @@ function App() {
           )}
 
           {/* MY SUBMISSIONS */}
-          {page==='My Submissions' && !isAdmin && (
+          {page==='My Submissions' && isFieldUser && (
             <>
               <div className="page-heading">
                 <div>
@@ -1161,7 +1330,7 @@ function App() {
           )}
 
           {/* MY TASKS */}
-          {page==='My Tasks' && !isAdmin && (
+          {page==='My Tasks' && isFieldUser && (
             <>
               <div className="page-heading">
                 <div>
@@ -1191,7 +1360,7 @@ function App() {
           )}
 
           {/* FIELD USER MY PROFILE */}
-          {page==='My Profile' && !isAdmin && (
+          {page==='My Profile' && isFieldUser && (
             <>
               <div className="page-heading">
                 <div>
@@ -1334,10 +1503,11 @@ function App() {
       {/* NEW ENTRY MODAL */}
       {showEntry && (
         <Modal
-          title="New field data entry"
-          subtitle="Submit notes and supporting files for admin review."
+          title={isFieldUser ? "Punjab Public Opinion & Development Survey" : "New field data entry"}
+          subtitle={isFieldUser ? "Complete the survey and submit your answers for admin review." : "Submit notes and supporting files for admin review."}
           close={() => setShowEntry(false)}
         >
+          {isFieldUser ? <PublicSurvey /> : (
           <form className="modal-form" onSubmit={submitEntry}>
             <label>Entry title *</label>
             <input
@@ -1405,6 +1575,7 @@ function App() {
               </button>
             </div>
           </form>
+          )}
         </Modal>
       )}
 
