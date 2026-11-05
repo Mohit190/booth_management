@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./Survey.css";
 
-const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API = import.meta.env.VITE_API_URL || "https://booth-management-4.onrender.com";
 const PARTIES = ["BJP", "Congress", "AAP", "Shiromani Akali Dal", "Waris Punjab De"];
 const ISSUES = ["Drug abuse and addiction", "Crime and public safety", "Corruption", "Unemployment among youth", "Roads and infrastructure", "Water supply and electricity", "Healthcare and education", "Agricultural and farmers' issues", "Sanitation and drainage", "Other"];
 const PRIORITIES = ["Eradication of drugs and rehabilitation", "Crime prevention and public safety", "Anti-corruption initiatives", "Employment opportunities for youth", "Education and healthcare", "Farmers' welfare and agricultural development", "Industrial growth and business opportunities", "Infrastructure development", "Women's safety", "Environmental protection", "Other"];
