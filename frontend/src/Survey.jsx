@@ -1,109 +1,882 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 import "./Survey.css";
 
-const API = import.meta.env.VITE_API_URL || "https://booth-management-4.onrender.com";
-const PARTIES = ["BJP", "Congress", "AAP", "Shiromani Akali Dal", "Waris Punjab De"];
-const ISSUES = ["Drug abuse and addiction", "Crime and public safety", "Corruption", "Unemployment among youth", "Roads and infrastructure", "Water supply and electricity", "Healthcare and education", "Agricultural and farmers' issues", "Sanitation and drainage", "Other"];
-const PRIORITIES = ["Eradication of drugs and rehabilitation", "Crime prevention and public safety", "Anti-corruption initiatives", "Employment opportunities for youth", "Education and healthcare", "Farmers' welfare and agricultural development", "Industrial growth and business opportunities", "Infrastructure development", "Women's safety", "Environmental protection", "Other"];
-const IMPROVEMENTS = ["Stronger grassroots and local leadership", "Improved employment opportunities", "Effective action against drugs and crime", "Transparent and accountable governance", "Better farmers' welfare policies", "Improved healthcare and education", "Industrial and economic development", "Greater public engagement", "A clear vision for Punjab's development", "Other"];
-const LEADERS = ["Bhagwant Mann", "Arvind Kejriwal", "Charanjit Singh Channi", "Pargat Singh", "Kewal Singh Dhillon", "Narendra Modi", "Amit Shah", "Rahul Gandhi", "Amritpal Singh"];
-const SCALE = ["Very Positive", "Positive", "Neutral", "Negative", "Very Negative", "Not Familiar"];
-const PARTIES_SCALE = ["Very Favourable", "Favourable", "Neutral", "Unfavourable", "Very Unfavourable", "Not Familiar"];
-const QUESTIONS = [
- {id:"district",n:1,section:"Respondent Profile",title:"District / Constituency / Village / Ward",type:"text",required:true,placeholder:"Enter district, constituency, village or ward"},
- {id:"age",n:2,section:"Respondent Profile",title:"Age",type:"number",required:true,placeholder:"Age in years (18+)"},
- {id:"occupation",n:3,section:"Respondent Profile",title:"Occupation",type:"radio",options:["Business / Entrepreneur","Government Employee","Private Sector Employee","Farmer","Student","Self-employed","Homemaker","Retired","Unemployed","Other"]},
- {id:"residence",n:4,section:"Respondent Profile",title:"How long have you been residing in this area?",type:"radio",options:["Less than 1 year","1–5 years","5–10 years","More than 10 years"]},
- {id:"local_issues",n:5,section:"Key Issues & Development in Punjab",title:"What are the three most pressing issues in your locality? (Select up to 3)",type:"multi",max:3,options:ISSUES},
- {id:"development",n:6,section:"Key Issues & Development in Punjab",title:"How would you assess the overall development of your locality?",type:"radio",options:["Excellent","Good","Average","Poor","Very Poor"]},
- {id:"seriousness",n:7,section:"Key Issues & Development in Punjab",title:"How serious are the following issues in Punjab?",type:"matrix",rows:["Drug abuse","Crime and law & order","Corruption","Youth unemployment","Youth migration","Agricultural challenges"],options:["Very Serious","Serious","Moderate","Not Serious","Not Sure"]},
- {id:"services",n:8,section:"Key Issues & Development in Punjab",title:"How effectively are government services and welfare schemes reaching the public?",type:"radio",options:["Very effectively","To some extent","Not effectively","Not sure"]},
- {id:"priorities",n:9,section:"Key Issues & Development in Punjab",title:"Which three areas should be the highest priorities for Punjab's development? (Select up to 3)",type:"multi",max:3,options:PRIORITIES},
- {id:"leader_opinion",n:10,section:"Political Leadership & Governance",title:"What is your overall opinion of the following political leaders?",type:"matrix",rows:LEADERS,options:SCALE},
- {id:"government_performance",n:11,section:"Political Leadership & Governance",title:"How would you evaluate the performance of the current Punjab government?",type:"radio",options:["Excellent","Good","Average","Poor","Very Poor","Not Sure"]},
- {id:"preferred_party",n:12,section:"Upcoming Election & Political Preferences",title:"Which political party would you currently prefer to support in the upcoming Punjab Assembly elections?",type:"radio",options:[...PARTIES,"Other","Undecided","Prefer not to say"]},
- {id:"candidate_type",n:13,section:"Upcoming Election & Political Preferences",title:"What type of candidate would you prefer to represent your constituency in the upcoming elections?",type:"radio",options:[...PARTIES.map(p=>`${p} candidate`),"Independent candidate","Other","Undecided","Prefer not to say"],extra:{id:"candidate_name",title:"Preferred candidate's name (if known)",type:"text"}},
- {id:"voting_factors",n:14,section:"Upcoming Election & Political Preferences",title:"Which factors would have the greatest influence on your voting decision?",type:"multi",options:["Candidate's reputation and public service","Party leadership","Development and infrastructure","Employment opportunities","Action against drugs","Law and order","Transparent and corruption-free governance","Farmers' welfare","Education and healthcare","Other"]},
- {id:"best_positioned",n:15,section:"Upcoming Election & Political Preferences",title:"Which political party do you believe is currently best positioned to gain public support in the next election?",type:"radio",options:[...PARTIES,"No clear preference","Not sure"]},
- {id:"party_image",n:16,section:"Public Perception of Political Parties",title:"How would you rate the current public image of the following political parties in Punjab?",type:"matrix",rows:PARTIES,options:PARTIES_SCALE},
- {id:"party_improvements",n:17,section:"Public Perception of Political Parties",title:"What initiatives or changes should the following political parties undertake to improve public trust and confidence? (Select all relevant options for each party)",type:"party_multi",rows:PARTIES,options:IMPROVEMENTS},
- {id:"candidate_qualities",n:18,section:"Public Perception of Political Parties",title:"Which qualities do you consider most important when selecting a candidate for your constituency? (Select up to 3)",type:"multi",max:3,options:["Honest and clean public image","Strong local connection and understanding of public issues","Accessibility and engagement with people","Administrative and leadership experience","Vision for development","Youth representation","Business and professional experience","Proven record of public service","Other"]},
- {id:"potential_candidate",n:19,section:"Public Perception of Political Parties",title:"Is there any particular leader or potential candidate you would like to see represent your constituency?",type:"group",fields:[{id:"name",title:"Name",type:"text"},{id:"party",title:"Party",type:"text"},{id:"reason",title:"Reason (Optional)",type:"textarea"}]},
- {id:"biggest_change",n:20,section:"Public Suggestions & Expectations",title:"What is the single biggest change you would like to see in Punjab over the next five years?",type:"textarea"},
- {id:"suggestions",n:21,section:"Public Suggestions & Expectations",title:"Do you have any suggestions, concerns, or recommendations for Punjab's political leadership?",type:"textarea"}
-];
-const SECTIONS = [...new Set(QUESTIONS.map(q=>q.section))];
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
-function Question({q,value,onChange}) {
- const toggle = (v, max) => {
-   const arr = Array.isArray(value) ? value : [];
-   onChange(arr.includes(v) ? arr.filter(x=>x!==v) : (max && arr.length>=max ? arr : [...arr,v]));
- };
- if(q.type==="text" || q.type==="number") return <input type={q.type} min={q.type==="number"?18:undefined} max={q.type==="number"?110:undefined} placeholder={q.placeholder||"Your answer"} value={value||""} onChange={e=>onChange(e.target.value)} />;
- if(q.type==="textarea") return <textarea rows="4" value={value||""} onChange={e=>onChange(e.target.value)} placeholder="Write your response here..." />;
- if(q.type==="radio") return <div className="survey-options">{q.options.map(o=><label className="survey-option" key={o}><input type="radio" name={q.id} checked={value===o} onChange={()=>onChange(o)}/><span>{o}</span></label>)}</div>;
- if(q.type==="multi") return <><div className="survey-options">{q.options.map(o=><label className="survey-option" key={o}><input type="checkbox" checked={(value||[]).includes(o)} onChange={()=>toggle(o,q.max)}/><span>{o}</span></label>)}</div>{q.max&&<small className="survey-hint">Select up to {q.max}. Selected: {(value||[]).length}</small>}</>;
- if(q.type==="matrix") return <div className="survey-matrix-wrap"><table className="survey-matrix"><thead><tr><th>Item</th>{q.options.map(o=><th key={o}>{o}</th>)}</tr></thead><tbody>{q.rows.map(r=><tr key={r}><th>{r}</th>{q.options.map(o=><td key={o}><input aria-label={`${r}: ${o}`} type="radio" name={`${q.id}-${r}`} checked={value?.[r]===o} onChange={()=>onChange({...value,[r]:o})}/></td>)}</tr>)}</tbody></table></div>;
- if(q.type==="party_multi") return <div className="party-multi">{q.rows.map(p=><div className="party-choice" key={p}><b>{p}</b><div className="survey-options">{q.options.map(o=><label className="survey-option" key={o}><input type="checkbox" checked={(value?.[p]||[]).includes(o)} onChange={()=>onChange({...value,[p]:(value?.[p]||[]).includes(o)?value[p].filter(x=>x!==o):[...(value?.[p]||[]),o]})}/><span>{o}</span></label>)}</div></div>)}</div>;
- if(q.type==="group") return <div className="survey-group">{q.fields.map(f=><label key={f.id}>{f.title}{f.type==="textarea"?<textarea rows="3" value={value?.[f.id]||""} onChange={e=>onChange({...value,[f.id]:e.target.value})}/>:<input value={value?.[f.id]||""} onChange={e=>onChange({...value,[f.id]:e.target.value})}/>}</label>)}</div>;
- return null;
+const PARTIES = [
+  "BJP",
+  "Indian National Congress",
+  "Aam Aadmi Party (AAP)",
+  "Shiromani Akali Dal (SAD)",
+  "Waris Punjab De",
+  "Other"
+];
+
+const PROFESSIONS = [
+  "Business Owner / Entrepreneur",
+  "Trader / Shopkeeper",
+  "Farmer / Agricultural Worker",
+  "Government Employee",
+  "Private Sector Employee",
+  "Self-Employed / Freelancer",
+  "Professional (Doctor, Lawyer, Engineer, etc.)",
+  "Daily Wage Worker / Labourer",
+  "Student",
+  "Homemaker",
+  "Retired",
+  "Unemployed / Job Seeker",
+  "Other"
+];
+
+const ISSUES = [
+  "Drugs",
+  "Crime",
+  "Corruption",
+  "Unemployment",
+  "Other"
+];
+
+const LEADERS = [
+  "Bhagwant Mann",
+  "Charanjit Singh Channi",
+  "Amritpal Singh",
+  "Sukhbir Badal",
+  "Kewal Singh Dhillon",
+  "Pargat Singh",
+  "Rahul Gandhi",
+  "Narendra Modi",
+  "Amit Shah",
+  "Arvind Kejriwal"
+];
+
+const OPINIONS = ["Very Positive", "Positive", "Negative", "Neutral"];
+const CONGRESS_RATINGS = ["Very Good", "Good", "Average", "Poor", "Very Poor"];
+
+const CAMPAIGN_EXPECTATIONS = [
+  "Personal relationships with candidates",
+  "Community or social commitments",
+  "Short-term benefits or incentives",
+  "Financial assistance",
+  "Gifts or other offerings",
+  "Party leadership and influence",
+  "Other"
+];
+
+const QUESTIONS = [
+  { id: "respondent_name", section: "Respondent Details", title: "Name (Person)", type: "text" },
+  { id: "gender", section: "Respondent Details", title: "Gender", type: "radio", options: ["Male", "Female"] },
+  { id: "age", section: "Respondent Details", title: "Age", type: "number" },
+  { id: "occupation", section: "Respondent Details", title: "Profession", type: "radio", options: PROFESSIONS },
+  
+  {
+    id: "education_qualification",
+    section: "Respondent Details",
+    title: "Education Qualification",
+    type: "radio",
+    options: [
+      "No Formal Education",
+      "Primary",
+      "Middle",
+      "Matriculation",
+      "Senior Secondary",
+      "Diploma",
+      "Graduate",
+      "Postgraduate",
+      "Doctorate",
+      "Other"
+    ]
+  },
+  { id: "years_in_area", section: "Respondent Details", title: "How long have you lived in this area?", type: "text" },
+  { id: "booth_number", section: "Respondent Details", title: "Booth Number", type: "text" },
+  { id: "village_ward", section: "Respondent Details", title: "Village / Ward Number", type: "text" },
+  { id: "booth_name", section: "Respondent Details", title: "Booth Name", type: "text" },
+  { id: "house_address", section: "Respondent Details", title: "House Address", type: "text" },
+  { id: "voter_id", section: "Respondent Details", title: "Voter ID", type: "text" },
+  { id: "phone_number", section: "Respondent Details", title: "Phone Number", type: "text" },
+  { id: "constituency", section: "Respondent Details", title: "Assembly Constituency", type: "text" },
+  { id: "preferred_candidate", section: "Political Preferences", title: "Preferred Candidate Name", type: "text" },
+  { id: "local_issues", section: "Local Issues", title: "What are the problems / issues in this area?", type: "multi", options: ISSUES },
+  { id: "leader_opinion", section: "Leadership Opinion", title: "What is your opinion of these political leaders?", type: "matrix", rows: LEADERS, options: OPINIONS },
+  { id: "electricity_finance_opinion", section: "Leadership Opinion", title: "What is your opinion on electricity benefits and financial assistance provided by the Bhagwant Mann government?", type: "radio", options: OPINIONS },
+  { id: "preferred_party", section: "Political Preferences", title: "What is your preferred political party?", type: "radio", options: PARTIES },
+  { id: "second_choice_party", section: "Political Preferences", title: "Apart from your first-choice political party, which other political party would you consider supporting?", type: "radio", options: PARTIES },
+  { id: "campaign_expectations", section: "Campaign Expectations", title: "What do voters in your locality expect from political candidates during election campaigns?", type: "multi", options: CAMPAIGN_EXPECTATIONS },
+  { id: "congress_team_assessment", section: "Political Preferences", title: "How would you assess the current leadership, internal coordination and overall functioning of the Punjab Congress team?", type: "radio", options: CONGRESS_RATINGS }
+];
+
+const LANG = {
+  en: {
+    heading: "AI-Powered Public Opinion Survey, Research, Intelligence & Analytics Report",
+    subtitle: "LokPulseIQ AI",
+    submit: "Submit Survey",
+    submitting: "Submitting...",
+    consent: "I voluntarily agree to participate in this public opinion survey.",
+    success: "Survey submitted successfully!",
+    track: "Your Track ID",
+    required: "Please complete the required fields and provide consent.",
+    other: "Please specify",
+    words: "words",
+    sections: {
+      "Respondent Details": "Respondent Details",
+      "Local Issues": "Local Issues",
+      "Leadership Opinion": "Leadership Opinion",
+      "Political Preferences": "Political Preferences",
+      "Campaign Expectations": "Campaign Expectations"
+    }
+  },
+  hi: {
+    heading: "AI-संचालित जनमत सर्वेक्षण, अनुसंधान, इंटेलिजेंस एवं एनालिटिक्स रिपोर्ट",
+    subtitle: "LokPulseIQ AI",
+    submit: "सर्वेक्षण जमा करें",
+    submitting: "जमा हो रहा है...",
+    consent: "मैं स्वेच्छा से इस जनमत सर्वेक्षण में भाग लेने के लिए सहमत हूं।",
+    success: "सर्वेक्षण सफलतापूर्वक जमा हो गया!",
+    track: "आपकी ट्रैक आईडी",
+    required: "कृपया आवश्यक जानकारी भरें और सहमति दें।",
+    other: "कृपया बताएं",
+    words: "शब्द",
+    sections: {
+      "Respondent Details": "उत्तरदाता का विवरण",
+      "Local Issues": "स्थानीय मुद्दे",
+      "Leadership Opinion": "नेतृत्व पर राय",
+      "Political Preferences": "राजनीतिक पसंद",
+      "Campaign Expectations": "चुनावी अपेक्षाएं"
+    }
+  },
+  pa: {
+    heading: "AI-ਸੰਚਾਲਿਤ ਲੋਕ ਰਾਏ ਸਰਵੇਖਣ, ਖੋਜ, ਇੰਟੈਲੀਜੈਂਸ ਅਤੇ ਐਨਾਲਿਟਿਕਸ ਰਿਪੋਰਟ",
+    subtitle: "LokPulseIQ AI",
+    submit: "ਸਰਵੇਖਣ ਜਮ੍ਹਾਂ ਕਰੋ",
+    submitting: "ਜਮ੍ਹਾਂ ਹੋ ਰਿਹਾ ਹੈ...",
+    consent: "ਮੈਂ ਆਪਣੀ ਮਰਜ਼ੀ ਨਾਲ ਇਸ ਸਰਵੇਖਣ ਵਿੱਚ ਹਿੱਸਾ ਲੈਣ ਲਈ ਸਹਿਮਤ ਹਾਂ।",
+    success: "ਸਰਵੇਖਣ ਸਫਲਤਾਪੂਰਵਕ ਜਮ੍ਹਾਂ ਹੋ ਗਿਆ!",
+    track: "ਤੁਹਾਡੀ ਟ੍ਰੈਕ ਆਈਡੀ",
+    required: "ਕਿਰਪਾ ਕਰਕੇ ਲੋੜੀਂਦੀ ਜਾਣਕਾਰੀ ਭਰੋ ਅਤੇ ਸਹਿਮਤੀ ਦਿਓ।",
+    other: "ਕਿਰਪਾ ਕਰਕੇ ਦੱਸੋ",
+    words: "ਸ਼ਬਦ",
+    sections: {
+      "Respondent Details": "ਜਵਾਬ ਦੇਣ ਵਾਲੇ ਦਾ ਵੇਰਵਾ",
+      "Local Issues": "ਸਥਾਨਕ ਮੁੱਦੇ",
+      "Leadership Opinion": "ਲੀਡਰਸ਼ਿਪ ਬਾਰੇ ਰਾਏ",
+      "Political Preferences": "ਰਾਜਨੀਤਿਕ ਪਸੰਦ",
+      "Campaign Expectations": "ਚੋਣ ਮੁਹਿੰਮ ਦੀਆਂ ਉਮੀਦਾਂ"
+    }
+  }
+};
+
+function capWords(value, max = 100) {
+  const words = value.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= max) return value;
+  return words.slice(0, max).join(" ");
+}
+
+function countWords(value = "") {
+  return value.trim()
+    ? value.trim().split(/\s+/).filter(Boolean).length
+    : 0;
+}
+
+function OtherField({ value, onChange, lang }) {
+  return (
+    <div className="survey-other-field">
+      <textarea
+        rows={3}
+        value={value || ""}
+        maxLength={2000}
+        placeholder={LANG[lang].other}
+        onChange={(e) => onChange(capWords(e.target.value, 100))}
+      />
+      <small>{countWords(value || "")}/100 {LANG[lang].words}</small>
+    </div>
+  );
+}
+
+function Question({
+  q,
+  value,
+  onChange,
+  otherValue,
+  onOtherChange,
+  lang
+}) {
+  const selected = Array.isArray(value) ? value : [];
+
+  const hasOther =
+    (q.type === "radio" && value === "Other") ||
+    (q.type === "multi" && selected.includes("Other"));
+
+  const toggle = (option) => {
+    const exists = selected.includes(option);
+
+    const next = exists
+      ? selected.filter((item) => item !== option)
+      : [...selected, option];
+
+    if (q.limit && next.length > q.limit) return;
+
+    onChange(next);
+
+    if (option === "Other" && exists) {
+      onOtherChange("");
+    }
+  };
+
+  return (
+    <div className="survey-question">
+      <h3>
+        {q.title} {q.required && <span>*</span>}
+      </h3>
+
+      {q.type === "text" && (
+        <input
+          type="text"
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Enter your answer"
+        />
+      )}
+
+      {q.type === "number" && (
+        <input
+          type="number"
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Enter age"
+        />
+      )}
+
+      {q.type === "radio" && (
+        <div className="survey-options">
+          {q.options.map((option) => (
+            <label className="survey-option" key={option}>
+              <input
+                type="radio"
+                name={q.id}
+                checked={value === option}
+                onChange={() => {
+                  onChange(option);
+                  if (option !== "Other") onOtherChange("");
+                }}
+              />
+              <span>
+                {option === "Other" ? "Other" : option}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+
+      {q.type === "radio" && hasOther && (
+        <OtherField
+          value={otherValue}
+          onChange={onOtherChange}
+          lang={lang}
+        />
+      )}
+
+      {q.type === "multi" && (
+        <>
+          <div className="survey-options">
+            {q.options.map((option) => (
+              <label className="survey-option" key={option}>
+                <input
+                  type="checkbox"
+                  checked={selected.includes(option)}
+                  onChange={() => toggle(option)}
+                />
+                <span>
+                  {option === "Other" ? "Other" : option}
+                </span>
+              </label>
+            ))}
+          </div>
+
+          {q.limit && (
+            <small>Select up to {q.limit} options.</small>
+          )}
+
+          {hasOther && (
+            <OtherField
+              value={otherValue}
+              onChange={onOtherChange}
+              lang={lang}
+            />
+          )}
+        </>
+      )}
+
+      {q.type === "matrix" && (
+        <div className="survey-matrix">
+          {q.rows.map((row) => (
+            <div className="survey-matrix-row" key={row}>
+              <strong>{row}</strong>
+
+              <div className="survey-options">
+                {q.options.map((option) => (
+                  <label className="survey-option" key={option}>
+                    <input
+                      type="radio"
+                      name={`${q.id}_${row}`}
+                      checked={(value || {})[row] === option}
+                      onChange={() =>
+                        onChange({
+                          ...(value || {}),
+                          [row]: option
+                        })
+                      }
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {q.type === "group" && (
+        <div className="survey-group-fields">
+          {q.fields.map((field) => (
+            <label key={field.id}>
+              {field.label}
+              <input
+                value={(value || {})[field.id] || ""}
+                onChange={(e) =>
+                  onChange({
+                    ...(value || {}),
+                    [field.id]: e.target.value
+                  })
+                }
+              />
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function VoiceRecorder({ value, onChange }) {
+  const [recording, setRecording] = useState(false);
+  const [error, setError] = useState("");
+  const recorderRef = React.useRef(null);
+  const chunksRef = React.useRef([]);
+
+  const startRecording = async () => {
+    setError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "";
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) chunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, {
+          type: recorder.mimeType || "audio/webm"
+        });
+        const reader = new FileReader();
+        reader.onloadend = () => onChange(reader.result);
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+      setRecording(true);
+    } catch (err) {
+      setError("Microphone access was not available. Please allow microphone permission and try again.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
+    }
+    setRecording(false);
+  };
+
+  return (
+    <div className="survey-question">
+      <h3>Voice Recording (Optional)</h3>
+      <p>You can record a voice response if you wish.</p>
+      <div className="survey-options">
+        {!recording ? (
+          <button type="button" onClick={startRecording}>
+            {value ? "Record Again" : "Start Voice Recording"}
+          </button>
+        ) : (
+          <button type="button" onClick={stopRecording}>
+            Stop Recording
+          </button>
+        )}
+        {value && (
+          <button type="button" onClick={() => onChange("")}>
+            Delete Recording
+          </button>
+        )}
+      </div>
+      {recording && <small>Recording in progress...</small>}
+      {error && <div className="survey-error">{error}</div>}
+      {value && <audio controls src={value} />}
+    </div>
+  );
 }
 
 export function PublicSurvey() {
- const [answers,setAnswers]=useState({});
- const [config,setConfig]=useState({enabled:true,title:"PUNJAB PUBLIC OPINION & DEVELOPMENT SURVEY",intro:"Understanding Public Issues, Governance, Political Perceptions & Future Expectations"});
- const [busy,setBusy]=useState(false),[error,setError]=useState(""),[receipt,setReceipt]=useState("");
- useEffect(()=>{fetch(`${API}/api/survey/config`).then(r=>r.ok?r.json():null).then(x=>x&&setConfig(x)).catch(()=>{});},[]);
- const update=(id,v)=>setAnswers(a=>({...a,[id]:v}));
- async function submit(e){
-  e.preventDefault();setError("");
-  if(!answers.consent){setError("Please confirm your consent before submitting.");return;}
-  if(!answers.district?.trim() || !answers.age){setError("Please fill in district/area and age.");return;}
-  setBusy(true);
-  try{
-   const payload={answers:Object.fromEntries(Object.entries(answers).filter(([k])=>k!=="consent")),consent:true};
-   const r=await fetch(`${API}/api/survey/responses`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-   const d=await r.json();if(!r.ok)throw new Error(d.detail||"Submission failed");
-   setReceipt(d.receipt_code);setAnswers({});
-  }catch(err){setError(err.message||"Could not submit. Please try again.");}
-  finally{setBusy(false);}
- }
- if(receipt)return <main className="survey-page"><div className="survey-success"><div className="survey-success-icon">✓</div><h1>Thank you for participating!</h1><p>Your response has been submitted successfully.</p><div className="receipt-code"><small>Anonymous receipt code</small><b>{receipt}</b></div><p className="survey-hint">Keep this code only as a submission receipt. It does not identify you.</p><button className="survey-primary" onClick={()=>setReceipt("")}>Start another response</button></div></main>;
- if(!config.enabled)return <main className="survey-page"><div className="survey-success"><h1>Survey currently closed</h1><p>Thank you for your interest. Please check again later.</p></div></main>;
- return <main className="survey-page"><div className="survey-shell">
-  <header className="survey-hero"><div className="survey-brand">PUNJAB • PUBLIC VOICE</div><h1>{config.title}</h1><p>{config.intro}</p><div className="survey-privacy">🔒 Anonymous participation · Adults 18+ · No name, phone number or email collected</div></header>
-  <form onSubmit={submit}>
-   {SECTIONS.map((section,si)=><section className="survey-section" key={section}><div className="survey-section-head"><span>SECTION {si+1}</span><h2>{section}</h2></div>
-    {QUESTIONS.filter(q=>q.section===section).map(q=><div className="survey-question" key={q.id}><label className="survey-question-title">{q.n}. {q.title}{[1,2].includes(q.n)&&<em> *</em>}</label><Question q={q} value={answers[q.id]} onChange={v=>update(q.id,v)}/>{q.extra&&<div className="survey-extra"><label>{q.extra.title}</label><Question q={q.extra} value={answers[q.extra.id]} onChange={v=>update(q.extra.id,v)}/></div>}</div>)}
-   </section>)}
-   <label className="survey-consent"><input type="checkbox" checked={!!answers.consent} onChange={e=>update("consent",e.target.checked)}/><span>I confirm that I am 18 years or older and voluntarily agree to submit these anonymous survey responses. I understand that political opinions are sensitive information and will be used for the stated survey analysis.</span></label>
-   {error&&<div className="survey-error">{error}</div>}
-   <button className="survey-primary survey-submit" disabled={busy}>{busy?"Submitting...":"Submit Survey →"}</button>
-   <p className="survey-foot">Thank you for your participation. Please do not include identifying or confidential personal information in open-text answers.</p>
-  </form>
- </div></main>;
+  const [answers, setAnswers] = useState({});
+  const [lang, setLang] = useState("en");
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [receipt, setReceipt] = useState(null);
+  const [voiceRecording, setVoiceRecording] = useState("");
+
+  const t = LANG[lang];
+
+  const sections = useMemo(() => {
+    const result = {};
+
+    QUESTIONS.forEach((q) => {
+      if (!result[q.section]) result[q.section] = [];
+      result[q.section].push(q);
+    });
+
+    return result;
+  }, []);
+
+  const updateAnswer = (id, value) => {
+    setAnswers((previous) => {
+      const next = { ...previous, [id]: value };
+      const q = QUESTIONS.find((item) => item.id === id);
+
+      if (q?.type === "radio" && value !== "Other") {
+        delete next[`${id}_other`];
+      }
+
+      if (
+        q?.type === "multi" &&
+        (!Array.isArray(value) || !value.includes("Other"))
+      ) {
+        delete next[`${id}_other`];
+      }
+
+      return next;
+    });
+  };
+
+  const updateOther = (id, value) => {
+    setAnswers((previous) => ({
+      ...previous,
+      [`${id}_other`]: capWords(value, 100)
+    }));
+  };
+
+  const submitSurvey = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!consent) {
+      setError(t.required);
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const response = await fetch(`${API}/api/survey/responses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          answers: { ...answers, ...(voiceRecording ? { voice_recording: voiceRecording } : {}) },
+          consent: true
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Unable to submit survey.");
+      }
+
+      setReceipt(data);
+    } catch (err) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (receipt) {
+    const trackId =
+      receipt.track_id ||
+      receipt.trackId ||
+      receipt.reference ||
+      receipt.id ||
+      "Submitted";
+
+    return (
+      <div className="survey-page">
+        <div className="survey-shell">
+          <div className="survey-hero">
+            <div className="survey-brand">LokPulseIQ AI</div>
+            <h1>{t.success}</h1>
+            <p>{t.track}</p>
+            <h2>{trackId}</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="survey-page">
+      <div className="survey-shell">
+        <header className="survey-hero">
+          <div className="survey-brand">LokPulseIQ AI</div>
+
+          <h1>{t.heading}</h1>
+          <p>{t.subtitle}</p>
+
+          <div className="survey-language">
+            <button type="button" onClick={() => setLang("en")}>
+              English
+            </button>
+            <button type="button" onClick={() => setLang("hi")}>
+              हिन्दी
+            </button>
+            <button type="button" onClick={() => setLang("pa")}>
+              ਪੰਜਾਬੀ
+            </button>
+          </div>
+        </header>
+
+        <form onSubmit={submitSurvey}>
+          {Object.entries(sections).map(([section, questions]) => (
+            <section className="survey-section" key={section}>
+              <h2>{t.sections[section] || section}</h2>
+
+              {questions.map((q) => (
+                <Question
+                  key={q.id}
+                  q={q}
+                  value={answers[q.id]}
+                  onChange={(value) => updateAnswer(q.id, value)}
+                  otherValue={answers[`${q.id}_other`]}
+                  onOtherChange={(value) => updateOther(q.id, value)}
+                  lang={lang}
+                />
+              ))}
+            </section>
+          ))}
+
+          <VoiceRecorder value={voiceRecording} onChange={setVoiceRecording} />
+
+          <div className="survey-consent">
+            <label>
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+              />
+              {t.consent}
+            </label>
+          </div>
+
+          {error && (
+            <div className="survey-error">{error}</div>
+          )}
+
+          <button
+            className="survey-submit"
+            type="submit"
+            disabled={busy}
+          >
+            {busy ? t.submitting : t.submit}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export function SurveyAdmin() {
- const [key,setKey]=useState(()=>sessionStorage.getItem("surveyAdminKey")||"");
- const [data,setData]=useState({responses:[],total:0,config:{enabled:true,title:"PUNJAB PUBLIC OPINION & DEVELOPMENT SURVEY",intro:"Understanding Public Issues, Governance, Political Perceptions & Future Expectations"}});
- const [filter,setFilter]=useState(""),[selected,setSelected]=useState(null),[msg,setMsg]=useState(""),[loading,setLoading]=useState(false);
- const headers={"X-Admin-Key":key};
- async function load(){if(!key)return;setLoading(true);try{const r=await fetch(`${API}/api/survey/admin`,{headers});if(!r.ok)throw new Error("Admin key incorrect or access denied");const d=await r.json();setData(d);sessionStorage.setItem("surveyAdminKey",key);setMsg("");}catch(e){setMsg(e.message);}finally{setLoading(false);}}
- useEffect(()=>{if(key)load();},[]);
- const filtered=data.responses.filter(x=>(x.answers?.district||"").toLowerCase().includes(filter.toLowerCase()));
- async function saveConfig(patch){try{const r=await fetch(`${API}/api/survey/admin/config`,{method:"PUT",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify({...data.config,...patch})});if(!r.ok)throw new Error("Could not save settings");setData(d=>({...d,config:{...d.config,...patch}}));setMsg("Survey settings saved.");}catch(e){setMsg(e.message);}}
- function exportCsv(){const rows=[["Receipt","Submitted at",...QUESTIONS.map(q=>q.title)]];filtered.forEach(x=>rows.push([x.receipt_code,x.created_at,...QUESTIONS.map(q=>{const v=x.answers?.[q.id];return typeof v==="object"?JSON.stringify(v):v??"";})]));const csv=rows.map(row=>row.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download="punjab-survey-responses.csv";a.click();URL.revokeObjectURL(a.href);}
- const districtCount=Object.entries(filtered.reduce((a,x)=>{const d=x.answers?.district||"Not provided";a[d]=(a[d]||0)+1;return a;},{})).sort((a,b)=>b[1]-a[1]).slice(0,8);
- if(!key)return <section className="survey-admin"><h1>Public Survey Administration</h1><p>Enter the backend survey admin key to view responses.</p><input type="password" value={key} onChange={e=>setKey(e.target.value)} placeholder="Survey admin key"/><button className="survey-primary" onClick={load}>Unlock survey data</button>{msg&&<p className="survey-error">{msg}</p>}<small>Set SURVEY_ADMIN_KEY in your backend environment before using this page.</small></section>;
- return <section className="survey-admin"><div className="survey-admin-head"><div><span className="survey-brand">PUBLIC OPINION RESEARCH</span><h1>Survey responses</h1><p>Anonymous submissions and aggregated results</p></div><div className="survey-admin-actions"><button onClick={load}>↻ Refresh</button><button onClick={exportCsv}>↓ Export CSV</button></div></div>
-  {msg&&<p className="survey-admin-msg">{msg}</p>}
-  <div className="survey-admin-stats"><div><b>{data.total}</b><span>Total responses</span></div><div><b>{districtCount.length}</b><span>Areas represented</span></div><div><b>{data.responses.filter(x=>new Date(x.created_at).toDateString()===new Date().toDateString()).length}</b><span>Today</span></div></div>
-  <div className="survey-admin-settings"><div><div><b>Survey availability</b><small>Turn public submissions on or off</small></div><label className="survey-switch"><input type="checkbox" checked={!!data.config.enabled} onChange={e=>saveConfig({enabled:e.target.checked})}/><span>{data.config.enabled?"Open":"Closed"}</span></label></div><label>Survey title<input value={data.config.title||""} onChange={e=>setData(d=>({...d,config:{...d.config,title:e.target.value}}))}/></label><label>Subtitle / introduction<input value={data.config.intro||""} onChange={e=>setData(d=>({...d,config:{...d.config,intro:e.target.value}}))}/></label><button onClick={()=>saveConfig({title:data.config.title,intro:data.config.intro})}>Save survey settings</button></div>
-  <div className="survey-admin-panel"><div className="survey-admin-panel-head"><h2>Responses</h2><input placeholder="Filter by district / area" value={filter} onChange={e=>setFilter(e.target.value)}/></div>
-   <div className="survey-admin-table-wrap"><table><thead><tr><th>Receipt</th><th>Area</th><th>Age</th><th>Occupation</th><th>Preferred party</th><th>Submitted</th><th></th></tr></thead><tbody>{filtered.map(x=><tr key={x.id}><td>{x.receipt_code}</td><td>{x.answers?.district||"—"}</td><td>{x.answers?.age||"—"}</td><td>{x.answers?.occupation||"—"}</td><td>{x.answers?.preferred_party||"—"}</td><td>{new Date(x.created_at).toLocaleString()}</td><td><button onClick={()=>setSelected(x)}>View</button></td></tr>)}</tbody></table>{!filtered.length&&<p className="survey-empty">{loading?"Loading...":"No responses found yet."}</p>}</div>
-  </div>
-  <div className="survey-admin-panel"><h2>Responses by area</h2>{districtCount.map(([name,count])=><div className="survey-bar-row" key={name}><span>{name}</span><div><i style={{width:`${Math.max(3,count/Math.max(1,...districtCount.map(x=>x[1]))*100)}%`}}/></div><b>{count}</b></div>)}</div>
-  {selected&&<div className="survey-modal-backdrop" onClick={()=>setSelected(null)}><div className="survey-response-modal" onClick={e=>e.stopPropagation()}><button className="survey-modal-close" onClick={()=>setSelected(null)}>×</button><h2>Response {selected.receipt_code}</h2><p>{new Date(selected.created_at).toLocaleString()}</p>{QUESTIONS.map(q=><div className="survey-answer" key={q.id}><b>{q.n}. {q.title}</b><pre>{JSON.stringify(selected.answers?.[q.id]??"—",null,2).replace(/^"|"$/g,"")}</pre></div>)}</div></div>}
- </section>;
+  const [data, setData] = useState(null);
+
+  const [adminKey, setAdminKey] = useState(
+    () => localStorage.getItem("survey_admin_key") || ""
+  );
+
+  const [inputKey, setInputKey] = useState(adminKey);
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const loadData = async (key = adminKey) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`${API}/api/survey/admin`, {
+        headers: {
+          "X-Admin-Key": key
+        }
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.detail || "Unable to load admin data.");
+      }
+
+      setData(result);
+      setAdminKey(key);
+      localStorage.setItem("survey_admin_key", key);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (adminKey) loadData(adminKey);
+  }, []);
+
+  const responses = Array.isArray(data)
+    ? data
+    : data?.responses || data?.submissions || [];
+
+  const filtered = responses.filter((item) => {
+    const a = item.answers || item;
+    const search = filter.toLowerCase();
+
+    return (
+      !search ||
+      String(item.track_id || item.trackId || item.id || "")
+        .toLowerCase().includes(search) ||
+      String(a.village_ward || "").toLowerCase().includes(search) ||
+      String(a.constituency || "").toLowerCase().includes(search) ||
+      String(a.booth_number || "").toLowerCase().includes(search)
+    );
+  });
+
+  const downloadCSV = () => {
+    const allKeys = [
+      ...new Set(
+        filtered.flatMap((item) =>
+          Object.keys(item.answers || item)
+        )
+      )
+    ];
+
+    const headers = [
+      "Track ID",
+      "Submitted At",
+      ...allKeys
+    ];
+
+    const rows = filtered.map((item) => {
+      const a = item.answers || item;
+
+      return [
+        item.track_id || item.trackId || item.id || "",
+        item.created_at || item.submitted_at || "",
+        ...allKeys.map((key) => {
+          const value = a[key];
+
+          return typeof value === "object"
+            ? JSON.stringify(value)
+            : value ?? "";
+        })
+      ];
+    });
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((value) =>
+          `"${String(value ?? "").replace(/"/g, '""')}"`
+        ).join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8;"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "LokPulse-AI-Public-Opinion-Survey.csv";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="survey-admin">
+      <div className="survey-admin-header">
+        <div>
+          <div className="survey-brand">LokPulseIQ AI</div>
+          <h1>LokPulseIQ AI — Survey Admin</h1>
+          <p>Research & Analytics Dashboard</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => loadData()}
+          disabled={loading}
+        >
+          {loading ? "Loading..." : "Refresh Data"}
+        </button>
+      </div>
+
+      {!adminKey && (
+        <div className="survey-admin-login">
+          <h2>Admin Login</h2>
+
+          <input
+            type="password"
+            placeholder="Enter admin key"
+            value={inputKey}
+            onChange={(e) => setInputKey(e.target.value)}
+          />
+
+          <button
+            type="button"
+            onClick={() => loadData(inputKey)}
+            disabled={!inputKey || loading}
+          >
+            {loading ? "Loading..." : "Login"}
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="survey-error">{error}</div>
+      )}
+
+      {data && (
+        <>
+          <div className="survey-admin-stats">
+            <div className="survey-stat-card">
+              <h3>Total Responses</h3>
+              <strong>{responses.length}</strong>
+            </div>
+
+            <div className="survey-stat-card">
+              <h3>Filtered Responses</h3>
+              <strong>{filtered.length}</strong>
+            </div>
+          </div>
+
+          <div className="survey-admin-toolbar">
+            <input
+              placeholder="Search Track ID, village/ward, constituency or booth..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+
+            <button type="button" onClick={downloadCSV}>
+              Export CSV
+            </button>
+          </div>
+
+          <div className="survey-admin-table-wrap">
+            <table className="survey-admin-table">
+              <thead>
+                <tr>
+                  <th>Track ID</th>
+                  <th>Village / Ward</th>
+                  <th>Constituency</th>
+                  <th>Booth No.</th>
+                  <th>Age</th>
+                  <th>Preferred Party</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filtered.map((item, index) => {
+                  const a = item.answers || item;
+
+                  return (
+                    <tr key={item.track_id || item.id || index}>
+                      <td>
+                        {item.track_id || item.trackId || item.id || "-"}
+                      </td>
+                      <td>{a.village_ward || "-"}</td>
+                      <td>{a.constituency || "-"}</td>
+                      <td>{a.booth_number || "-"}</td>
+                      <td>{a.age || "-"}</td>
+                      <td>{a.preferred_party || "-"}</td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => setSelected(item)}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {selected && (
+        <div className="survey-modal-backdrop">
+          <div className="survey-modal">
+            <div className="survey-modal-header">
+              <h2>Survey Response Details</h2>
+
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+              >
+                Close
+              </button>
+            </div>
+
+            <p>
+              <strong>Track ID:</strong>{" "}
+              {selected.track_id ||
+                selected.trackId ||
+                selected.id ||
+                "-"}
+            </p>
+
+            {Object.entries(selected.answers || selected).map(
+              ([key, value]) => (
+                <div className="survey-detail-row" key={key}>
+                  <strong>{key.replace(/_/g, " ")}</strong>
+                  <span>
+                    {typeof value === "object"
+                      ? JSON.stringify(value)
+                      : String(value ?? "-")}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
+
+export default PublicSurvey;
