@@ -10,7 +10,7 @@ import {
 import './styles.css';
 import { PublicSurvey, SurveyAdmin } from './Survey';
 
-const API = 'https://booth-management-4.onrender.com';
+const API = 'http://127.0.0.1:8000';
 
 const demoUsers = [
   { id:'u1', name:'Aarav Sharma', username:'aarav', area:'Ward 04', status:'active', lat:30.3398, lng:76.3869, last_seen:new Date().toISOString() },
@@ -1504,7 +1504,6 @@ function App() {
       {showEntry && (
         <Modal
           title={isFieldUser ? "Punjab Public Opinion & Development Survey" : "New field data entry"}
-          subtitle={isFieldUser ? "Complete the survey and submit your answers for admin review." : "Submit notes and supporting files for admin review."}
           close={() => setShowEntry(false)}
         >
           {isFieldUser ? <PublicSurvey /> : (
