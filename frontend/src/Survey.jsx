@@ -68,7 +68,6 @@ const QUESTIONS = [
   { id: "gender", section: "Respondent Details", title: "Gender", type: "radio", options: ["Male", "Female"] },
   { id: "age", section: "Respondent Details", title: "Age", type: "number" },
   { id: "occupation", section: "Respondent Details", title: "Profession", type: "radio", options: PROFESSIONS },
-  
   {
     id: "education_qualification",
     section: "Respondent Details",
@@ -125,6 +124,7 @@ const LANG = {
       "Campaign Expectations": "Campaign Expectations"
     }
   },
+
   hi: {
     heading: "AI-संचालित जनमत सर्वेक्षण, अनुसंधान, इंटेलिजेंस एवं एनालिटिक्स रिपोर्ट",
     subtitle: "LokPulseIQ AI",
@@ -144,6 +144,7 @@ const LANG = {
       "Campaign Expectations": "चुनावी अपेक्षाएं"
     }
   },
+
   pa: {
     heading: "AI-ਸੰਚਾਲਿਤ ਲੋਕ ਰਾਏ ਸਰਵੇਖਣ, ਖੋਜ, ਇੰਟੈਲੀਜੈਂਸ ਅਤੇ ਐਨਾਲਿਟਿਕਸ ਰਿਪੋਰਟ",
     subtitle: "LokPulseIQ AI",
@@ -164,6 +165,146 @@ const LANG = {
     }
   }
 };
+
+const QUESTION_TRANSLATIONS = {
+  hi: {
+    "Name (Person)": "नाम",
+    "Gender": "लिंग",
+    "Age": "आयु",
+    "Profession": "पेशा",
+    "Education Qualification": "शैक्षणिक योग्यता",
+    "How long have you lived in this area?": "आप इस क्षेत्र में कितने समय से रह रहे हैं?",
+    "Booth Number": "बूथ नंबर",
+    "Village / Ward Number": "गांव / वार्ड नंबर",
+    "Booth Name": "बूथ का नाम",
+    "House Address": "घर का पता",
+    "Voter ID": "मतदाता पहचान पत्र",
+    "Phone Number": "फोन नंबर",
+    "Assembly Constituency": "विधानसभा क्षेत्र",
+    "Preferred Candidate Name": "पसंदीदा उम्मीदवार का नाम",
+    "What are the problems / issues in this area?": "इस क्षेत्र की मुख्य समस्याएं क्या हैं?",
+    "What is your opinion of these political leaders?": "इन राजनीतिक नेताओं के बारे में आपकी क्या राय है?",
+    "What is your opinion on electricity benefits and financial assistance provided by the Bhagwant Mann government?": "भगवंत मान सरकार द्वारा दी जा रही बिजली सुविधाओं और वित्तीय सहायता के बारे में आपकी क्या राय है?",
+    "What is your preferred political party?": "आपकी पसंदीदा राजनीतिक पार्टी कौन सी है?",
+    "Apart from your first-choice political party, which other political party would you consider supporting?": "अपनी पहली पसंद के अलावा आप किस अन्य राजनीतिक पार्टी का समर्थन कर सकते हैं?",
+    "What do voters in your locality expect from political candidates during election campaigns?": "चुनाव प्रचार के दौरान मतदाता उम्मीदवारों से क्या उम्मीद रखते हैं?",
+    "How would you assess the current leadership, internal coordination and overall functioning of the Punjab Congress team?": "आप पंजाब कांग्रेस टीम के नेतृत्व, आपसी तालमेल और कामकाज का मूल्यांकन कैसे करेंगे?",
+    "Male": "पुरुष",
+    "Female": "महिला",
+    "Other": "अन्य",
+    "Business Owner / Entrepreneur": "व्यवसाय मालिक / उद्यमी",
+    "Trader / Shopkeeper": "व्यापारी / दुकानदार",
+    "Farmer / Agricultural Worker": "किसान / कृषि मजदूर",
+    "Government Employee": "सरकारी कर्मचारी",
+    "Private Sector Employee": "निजी क्षेत्र कर्मचारी",
+    "Self-Employed / Freelancer": "स्वरोजगार / फ्रीलांसर",
+    "Professional (Doctor, Lawyer, Engineer, etc.)": "पेशेवर (डॉक्टर, वकील, इंजीनियर आदि)",
+    "Daily Wage Worker / Labourer": "दैनिक मजदूर",
+    "Student": "विद्यार्थी",
+    "Homemaker": "गृहिणी",
+    "Retired": "सेवानिवृत्त",
+    "Unemployed / Job Seeker": "बेरोजगार / नौकरी तलाशने वाले",
+    "No Formal Education": "कोई औपचारिक शिक्षा नहीं",
+    "Primary": "प्राथमिक",
+    "Middle": "मिडिल",
+    "Matriculation": "मैट्रिक",
+    "Senior Secondary": "सीनियर सेकेंडरी",
+    "Diploma": "डिप्लोमा",
+    "Graduate": "स्नातक",
+    "Postgraduate": "स्नातकोत्तर",
+    "Doctorate": "डॉक्टरेट",
+    "Drugs": "नशे की समस्या",
+    "Crime": "अपराध",
+    "Corruption": "भ्रष्टाचार",
+    "Unemployment": "बेरोजगारी",
+    "Very Positive": "बहुत सकारात्मक",
+    "Positive": "सकारात्मक",
+    "Negative": "नकारात्मक",
+    "Neutral": "तटस्थ",
+    "Very Good": "बहुत अच्छा",
+    "Good": "अच्छा",
+    "Average": "औसत",
+    "Poor": "खराब",
+    "Very Poor": "बहुत खराब",
+    "Personal relationships with candidates": "उम्मीदवारों के साथ व्यक्तिगत संबंध",
+    "Community or social commitments": "सामुदायिक या सामाजिक प्रतिबद्धताएं",
+    "Short-term benefits or incentives": "अल्पकालिक लाभ या प्रोत्साहन",
+    "Financial assistance": "वित्तीय सहायता",
+    "Gifts or other offerings": "उपहार या अन्य सुविधाएं",
+    "Party leadership and influence": "पार्टी नेतृत्व और प्रभाव"
+  },
+
+  pa: {
+    "Name (Person)": "ਨਾਮ",
+    "Gender": "ਲਿੰਗ",
+    "Age": "ਉਮਰ",
+    "Profession": "ਪੇਸ਼ਾ",
+    "Education Qualification": "ਵਿੱਦਿਅਕ ਯੋਗਤਾ",
+    "How long have you lived in this area?": "ਤੁਸੀਂ ਇਸ ਇਲਾਕੇ ਵਿੱਚ ਕਿੰਨੇ ਸਮੇਂ ਤੋਂ ਰਹਿ ਰਹੇ ਹੋ?",
+    "Booth Number": "ਬੂਥ ਨੰਬਰ",
+    "Village / Ward Number": "ਪਿੰਡ / ਵਾਰਡ ਨੰਬਰ",
+    "Booth Name": "ਬੂਥ ਦਾ ਨਾਮ",
+    "House Address": "ਘਰ ਦਾ ਪਤਾ",
+    "Voter ID": "ਵੋਟਰ ਆਈਡੀ",
+    "Phone Number": "ਫੋਨ ਨੰਬਰ",
+    "Assembly Constituency": "ਵਿਧਾਨ ਸਭਾ ਹਲਕਾ",
+    "Preferred Candidate Name": "ਪਸੰਦੀਦਾ ਉਮੀਦਵਾਰ ਦਾ ਨਾਮ",
+    "What are the problems / issues in this area?": "ਇਸ ਇਲਾਕੇ ਦੀਆਂ ਮੁੱਖ ਸਮੱਸਿਆਵਾਂ ਕੀ ਹਨ?",
+    "What is your opinion of these political leaders?": "ਇਨ੍ਹਾਂ ਰਾਜਨੀਤਿਕ ਨੇਤਾਵਾਂ ਬਾਰੇ ਤੁਹਾਡੀ ਕੀ ਰਾਏ ਹੈ?",
+    "What is your opinion on electricity benefits and financial assistance provided by the Bhagwant Mann government?": "ਭਗਵੰਤ ਮਾਨ ਸਰਕਾਰ ਵੱਲੋਂ ਦਿੱਤੀਆਂ ਬਿਜਲੀ ਸਹੂਲਤਾਂ ਅਤੇ ਵਿੱਤੀ ਸਹਾਇਤਾ ਬਾਰੇ ਤੁਹਾਡੀ ਕੀ ਰਾਏ ਹੈ?",
+    "What is your preferred political party?": "ਤੁਹਾਡੀ ਪਸੰਦੀਦਾ ਰਾਜਨੀਤਿਕ ਪਾਰਟੀ ਕਿਹੜੀ ਹੈ?",
+    "Apart from your first-choice political party, which other political party would you consider supporting?": "ਆਪਣੀ ਪਹਿਲੀ ਪਸੰਦ ਤੋਂ ਇਲਾਵਾ ਤੁਸੀਂ ਕਿਸ ਹੋਰ ਪਾਰਟੀ ਦਾ ਸਮਰਥਨ ਕਰ ਸਕਦੇ ਹੋ?",
+    "What do voters in your locality expect from political candidates during election campaigns?": "ਚੋਣ ਮੁਹਿੰਮ ਦੌਰਾਨ ਵੋਟਰ ਉਮੀਦਵਾਰਾਂ ਤੋਂ ਕੀ ਉਮੀਦ ਰੱਖਦੇ ਹਨ?",
+    "How would you assess the current leadership, internal coordination and overall functioning of the Punjab Congress team?": "ਤੁਸੀਂ ਪੰਜਾਬ ਕਾਂਗਰਸ ਦੀ ਲੀਡਰਸ਼ਿਪ, ਆਪਸੀ ਤਾਲਮੇਲ ਅਤੇ ਕੰਮਕਾਜ ਦਾ ਮੁਲਾਂਕਣ ਕਿਵੇਂ ਕਰੋਗੇ?",
+    "Male": "ਮਰਦ",
+    "Female": "ਔਰਤ",
+    "Other": "ਹੋਰ",
+    "Business Owner / Entrepreneur": "ਕਾਰੋਬਾਰੀ ਮਾਲਕ / ਉਦਯੋਗਪਤੀ",
+    "Trader / Shopkeeper": "ਵਪਾਰੀ / ਦੁਕਾਨਦਾਰ",
+    "Farmer / Agricultural Worker": "ਕਿਸਾਨ / ਖੇਤੀਬਾੜੀ ਮਜ਼ਦੂਰ",
+    "Government Employee": "ਸਰਕਾਰੀ ਕਰਮਚਾਰੀ",
+    "Private Sector Employee": "ਪ੍ਰਾਈਵੇਟ ਕਰਮਚਾਰੀ",
+    "Self-Employed / Freelancer": "ਸਵੈ-ਰੁਜ਼ਗਾਰ / ਫ੍ਰੀਲਾਂਸਰ",
+    "Professional (Doctor, Lawyer, Engineer, etc.)": "ਪੇਸ਼ੇਵਰ (ਡਾਕਟਰ, ਵਕੀਲ, ਇੰਜੀਨੀਅਰ ਆਦਿ)",
+    "Daily Wage Worker / Labourer": "ਦਿਹਾੜੀਦਾਰ ਮਜ਼ਦੂਰ",
+    "Student": "ਵਿਦਿਆਰਥੀ",
+    "Homemaker": "ਘਰੇਲੂ ਔਰਤ",
+    "Retired": "ਸੇਵਾਮੁਕਤ",
+    "Unemployed / Job Seeker": "ਬੇਰੁਜ਼ਗਾਰ / ਨੌਕਰੀ ਲੱਭਣ ਵਾਲੇ",
+    "No Formal Education": "ਕੋਈ ਰਸਮੀ ਸਿੱਖਿਆ ਨਹੀਂ",
+    "Primary": "ਪ੍ਰਾਇਮਰੀ",
+    "Middle": "ਮਿਡਲ",
+    "Matriculation": "ਮੈਟ੍ਰਿਕ",
+    "Senior Secondary": "ਸੀਨੀਅਰ ਸੈਕੰਡਰੀ",
+    "Diploma": "ਡਿਪਲੋਮਾ",
+    "Graduate": "ਗ੍ਰੈਜੂਏਟ",
+    "Postgraduate": "ਪੋਸਟ ਗ੍ਰੈਜੂਏਟ",
+    "Doctorate": "ਡਾਕਟਰੇਟ",
+    "Drugs": "ਨਸ਼ਿਆਂ ਦੀ ਸਮੱਸਿਆ",
+    "Crime": "ਅਪਰਾਧ",
+    "Corruption": "ਭ੍ਰਿਸ਼ਟਾਚਾਰ",
+    "Unemployment": "ਬੇਰੁਜ਼ਗਾਰੀ",
+    "Very Positive": "ਬਹੁਤ ਸਕਾਰਾਤਮਕ",
+    "Positive": "ਸਕਾਰਾਤਮਕ",
+    "Negative": "ਨਕਾਰਾਤਮਕ",
+    "Neutral": "ਨਿਰਪੱਖ",
+    "Very Good": "ਬਹੁਤ ਵਧੀਆ",
+    "Good": "ਵਧੀਆ",
+    "Average": "ਔਸਤ",
+    "Poor": "ਮਾੜਾ",
+    "Very Poor": "ਬਹੁਤ ਮਾੜਾ",
+    "Personal relationships with candidates": "ਉਮੀਦਵਾਰਾਂ ਨਾਲ ਨਿੱਜੀ ਸਬੰਧ",
+    "Community or social commitments": "ਭਾਈਚਾਰਕ ਜਾਂ ਸਮਾਜਿਕ ਵਚਨਬੱਧਤਾਵਾਂ",
+    "Short-term benefits or incentives": "ਥੋੜ੍ਹੇ ਸਮੇਂ ਦੇ ਲਾਭ ਜਾਂ ਪ੍ਰੋਤਸਾਹਨ",
+    "Financial assistance": "ਵਿੱਤੀ ਸਹਾਇਤਾ",
+    "Gifts or other offerings": "ਤੋਹਫ਼ੇ ਜਾਂ ਹੋਰ ਸਹੂਲਤਾਂ",
+    "Party leadership and influence": "ਪਾਰਟੀ ਲੀਡਰਸ਼ਿਪ ਅਤੇ ਪ੍ਰਭਾਵ"
+  }
+};
+
+function translate(value, lang) {
+  return QUESTION_TRANSLATIONS[lang]?.[value] || value;
+}
 
 function capWords(value, max = 100) {
   const words = value.trim().split(/\s+/).filter(Boolean);
@@ -187,7 +328,9 @@ function OtherField({ value, onChange, lang }) {
         placeholder={LANG[lang].other}
         onChange={(e) => onChange(capWords(e.target.value, 100))}
       />
-      <small>{countWords(value || "")}/100 {LANG[lang].words}</small>
+      <small>
+        {countWords(value || "")}/100 {LANG[lang].words}
+      </small>
     </div>
   );
 }
@@ -225,7 +368,7 @@ function Question({
   return (
     <div className="survey-question">
       <h3>
-        {q.title} {q.required && <span>*</span>}
+        {translate(q.title, lang)} {q.required && <span>*</span>}
       </h3>
 
       {q.type === "text" && (
@@ -233,7 +376,7 @@ function Question({
           type="text"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Enter your answer"
+          placeholder={lang === "en" ? "Enter your answer" : lang === "hi" ? "अपना उत्तर लिखें" : "ਆਪਣਾ ਜਵਾਬ ਲਿਖੋ"}
         />
       )}
 
@@ -242,7 +385,7 @@ function Question({
           type="number"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Enter age"
+          placeholder={lang === "en" ? "Enter age" : lang === "hi" ? "आयु दर्ज करें" : "ਉਮਰ ਦਰਜ ਕਰੋ"}
         />
       )}
 
@@ -259,9 +402,7 @@ function Question({
                   if (option !== "Other") onOtherChange("");
                 }}
               />
-              <span>
-                {option === "Other" ? "Other" : option}
-              </span>
+              <span>{translate(option, lang)}</span>
             </label>
           ))}
         </div>
@@ -285,15 +426,19 @@ function Question({
                   checked={selected.includes(option)}
                   onChange={() => toggle(option)}
                 />
-                <span>
-                  {option === "Other" ? "Other" : option}
-                </span>
+                <span>{translate(option, lang)}</span>
               </label>
             ))}
           </div>
 
           {q.limit && (
-            <small>Select up to {q.limit} options.</small>
+            <small>
+              {lang === "hi"
+                ? `अधिकतम ${q.limit} विकल्प चुनें।`
+                : lang === "pa"
+                ? `ਵੱਧ ਤੋਂ ਵੱਧ ${q.limit} ਵਿਕਲਪ ਚੁਣੋ।`
+                : `Select up to ${q.limit} options.`}
+            </small>
           )}
 
           {hasOther && (
@@ -326,7 +471,7 @@ function Question({
                         })
                       }
                     />
-                    <span>{option}</span>
+                    <span>{translate(option, lang)}</span>
                   </label>
                 ))}
               </div>
@@ -357,8 +502,7 @@ function Question({
   );
 }
 
-
-function VoiceRecorder({ value, onChange }) {
+function VoiceRecorder({ value, onChange, lang }) {
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState("");
   const recorderRef = React.useRef(null);
@@ -366,65 +510,113 @@ function VoiceRecorder({ value, onChange }) {
 
   const startRecording = async () => {
     setError("");
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+
       const mimeType = MediaRecorder.isTypeSupported("audio/webm")
         ? "audio/webm"
         : "";
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+      const recorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType } : undefined
+      );
+
       recorderRef.current = recorder;
       chunksRef.current = [];
 
       recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) chunksRef.current.push(event.data);
+        if (event.data && event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
       };
 
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, {
           type: recorder.mimeType || "audio/webm"
         });
+
         const reader = new FileReader();
+
         reader.onloadend = () => onChange(reader.result);
         reader.readAsDataURL(blob);
+
         stream.getTracks().forEach((track) => track.stop());
       };
 
       recorder.start();
       setRecording(true);
     } catch (err) {
-      setError("Microphone access was not available. Please allow microphone permission and try again.");
+      setError(
+        "Microphone access was not available. Please allow microphone permission and try again."
+      );
     }
   };
 
   const stopRecording = () => {
-    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+    if (
+      recorderRef.current &&
+      recorderRef.current.state !== "inactive"
+    ) {
       recorderRef.current.stop();
     }
+
     setRecording(false);
   };
 
   return (
     <div className="survey-question">
-      <h3>Voice Recording (Optional)</h3>
-      <p>You can record a voice response if you wish.</p>
+      <h3>
+        {lang === "hi"
+          ? "वॉयस रिकॉर्डिंग (वैकल्पिक)"
+          : lang === "pa"
+          ? "ਵੌਇਸ ਰਿਕਾਰਡਿੰਗ (ਵਿਕਲਪਿਕ)"
+          : "Voice Recording (Optional)"}
+      </h3>
+
+      <p>
+        {lang === "hi"
+          ? "आप चाहें तो अपनी आवाज में जवाब रिकॉर्ड कर सकते हैं।"
+          : lang === "pa"
+          ? "ਤੁਸੀਂ ਚਾਹੋ ਤਾਂ ਆਪਣੀ ਆਵਾਜ਼ ਵਿੱਚ ਜਵਾਬ ਰਿਕਾਰਡ ਕਰ ਸਕਦੇ ਹੋ।"
+          : "You can record a voice response if you wish."}
+      </p>
+
       <div className="survey-options">
         {!recording ? (
           <button type="button" onClick={startRecording}>
-            {value ? "Record Again" : "Start Voice Recording"}
+            {value
+              ? lang === "hi" ? "दोबारा रिकॉर्ड करें" : lang === "pa" ? "ਦੁਬਾਰਾ ਰਿਕਾਰਡ ਕਰੋ" : "Record Again"
+              : lang === "hi" ? "रिकॉर्डिंग शुरू करें" : lang === "pa" ? "ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਕਰੋ" : "Start Voice Recording"}
           </button>
         ) : (
           <button type="button" onClick={stopRecording}>
-            Stop Recording
+            {lang === "hi" ? "रिकॉर्डिंग बंद करें" : lang === "pa" ? "ਰਿਕਾਰਡਿੰਗ ਬੰਦ ਕਰੋ" : "Stop Recording"}
           </button>
         )}
+
         {value && (
           <button type="button" onClick={() => onChange("")}>
-            Delete Recording
+            {lang === "hi" ? "रिकॉर्डिंग हटाएं" : lang === "pa" ? "ਰਿਕਾਰਡਿੰਗ ਮਿਟਾਓ" : "Delete Recording"}
           </button>
         )}
       </div>
-      {recording && <small>Recording in progress...</small>}
+
+      {recording && (
+        <small>
+          {lang === "hi"
+            ? "रिकॉर्डिंग चल रही है..."
+            : lang === "pa"
+            ? "ਰਿਕਾਰਡਿੰਗ ਜਾਰੀ ਹੈ..."
+            : "Recording in progress..."}
+        </small>
+      )}
+
       {error && <div className="survey-error">{error}</div>}
+
       {value && <audio controls src={value} />}
     </div>
   );
@@ -497,7 +689,12 @@ export function PublicSurvey() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          answers: { ...answers, ...(voiceRecording ? { voice_recording: voiceRecording } : {}) },
+          answers: {
+            ...answers,
+            ...(voiceRecording
+              ? { voice_recording: voiceRecording }
+              : {})
+          },
           consent: true
         })
       });
@@ -541,20 +738,36 @@ export function PublicSurvey() {
   return (
     <div className="survey-page">
       <div className="survey-shell">
+
         <header className="survey-hero">
           <div className="survey-brand">LokPulseIQ AI</div>
 
           <h1>{t.heading}</h1>
           <p>{t.subtitle}</p>
 
+          {/* PREMIUM LANGUAGE SELECTOR */}
           <div className="survey-language">
-            <button type="button" onClick={() => setLang("en")}>
+            <button
+              type="button"
+              className={`language-btn ${lang === "en" ? "active" : ""}`}
+              onClick={() => setLang("en")}
+            >
               English
             </button>
-            <button type="button" onClick={() => setLang("hi")}>
+
+            <button
+              type="button"
+              className={`language-btn ${lang === "hi" ? "active" : ""}`}
+              onClick={() => setLang("hi")}
+            >
               हिन्दी
             </button>
-            <button type="button" onClick={() => setLang("pa")}>
+
+            <button
+              type="button"
+              className={`language-btn ${lang === "pa" ? "active" : ""}`}
+              onClick={() => setLang("pa")}
+            >
               ਪੰਜਾਬੀ
             </button>
           </div>
@@ -579,7 +792,11 @@ export function PublicSurvey() {
             </section>
           ))}
 
-          <VoiceRecorder value={voiceRecording} onChange={setVoiceRecording} />
+          <VoiceRecorder
+            value={voiceRecording}
+            onChange={setVoiceRecording}
+            lang={lang}
+          />
 
           <div className="survey-consent">
             <label>
